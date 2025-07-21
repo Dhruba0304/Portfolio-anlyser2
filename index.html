@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Analyzer | Angel One Report Analysis</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div id="toast-container"></div>
+    
+    <header class="header">
+        <div class="container">
+            <h1>Portfolio Analyzer</h1>
+            <p>Upload your Angel One portfolio report for detailed analysis</p>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <!-- Upload Section -->
+            <div id="upload-section" class="upload-section">
+                <div class="card upload-card">
+                    <div class="card__body">
+                        <div id="upload-area" class="upload-area">
+                            <div class="upload-icon">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                    <polyline points="14,2 14,8 20,8"></polyline>
+                                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                                    <polyline points="10,9 9,9 8,9"></polyline>
+                                </svg>
+                            </div>
+                            <h3>Drag & Drop your Angel One Portfolio Report</h3>
+                            <p>Or click to select an Excel file (.xlsx)</p>
+                            <input type="file" id="file-input" accept=".xlsx,.xls" hidden>
+                            <button type="button" class="btn btn--secondary" onclick="document.getElementById('file-input').click()">
+                                Choose File
+                            </button>
+                        </div>
+                        
+                        <div id="file-info" class="file-info hidden">
+                            <div class="file-details">
+                                <div class="file-icon">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                        <polyline points="14,2 14,8 20,8"></polyline>
+                                    </svg>
+                                </div>
+                                <div class="file-meta">
+                                    <span id="file-name">filename.xlsx</span>
+                                    <span id="file-size">0 MB</span>
+                                </div>
+                            </div>
+                            
+                            <div id="password-section" class="password-section">
+                                <div class="form-group">
+                                    <label for="password-input" class="form-label">
+                                        File Password (if protected)
+                                    </label>
+                                    <input 
+                                        type="password" 
+                                        id="password-input" 
+                                        class="form-control" 
+                                        placeholder="Enter password to unlock file"
+                                    >
+                                </div>
+                            </div>
+                            
+                            <div class="upload-actions">
+                                <button type="button" class="btn btn--primary" id="analyze-btn">
+                                    <span id="analyze-text">Unlock & Analyze</span>
+                                    <div id="analyze-spinner" class="spinner hidden"></div>
+                                </button>
+                                <button type="button" class="btn btn--outline" id="clear-file-btn">
+                                    Clear File
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Demo Section for Testing -->
+                        <div class="demo-section">
+                            <hr style="margin: 2rem 0; border: none; border-top: 1px solid var(--color-border);">
+                            <p style="text-align: center; color: var(--color-text-secondary); margin-bottom: 1rem;">
+                                For demonstration purposes, you can also:
+                            </p>
+                            <div style="text-align: center;">
+                                <button type="button" class="btn btn--secondary" id="demo-btn">
+                                    View Demo Analysis
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analysis Dashboard -->
+            <div id="analysis-section" class="analysis-section hidden">
+                <!-- Portfolio Summary Cards -->
+                <div class="summary-grid">
+                    <div class="card summary-card">
+                        <div class="card__body">
+                            <div class="summary-header">
+                                <h3>Total Invested</h3>
+                                <div class="summary-icon invested">₹</div>
+                            </div>
+                            <div class="summary-value" id="invested-value">₹0</div>
+                        </div>
+                    </div>
+                    
+                    <div class="card summary-card">
+                        <div class="card__body">
+                            <div class="summary-header">
+                                <h3>Current Value</h3>
+                                <div class="summary-icon current">₹</div>
+                            </div>
+                            <div class="summary-value" id="current-value">₹0</div>
+                        </div>
+                    </div>
+                    
+                    <div class="card summary-card">
+                        <div class="card__body">
+                            <div class="summary-header">
+                                <h3>Total Gain/Loss</h3>
+                                <div class="summary-icon gain-loss">±</div>
+                            </div>
+                            <div class="summary-value" id="gain-loss-value">₹0</div>
+                            <div class="summary-percentage" id="gain-loss-percentage">0%</div>
+                        </div>
+                    </div>
+                    
+                    <div class="card summary-card">
+                        <div class="card__body">
+                            <div class="summary-header">
+                                <h3>Holdings</h3>
+                                <div class="summary-icon holdings">#</div>
+                            </div>
+                            <div class="summary-value" id="holdings-count">0</div>
+                            <div class="summary-subtitle">Total Scrips</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Section -->
+                <div class="charts-grid">
+                    <div class="card">
+                        <div class="card__header">
+                            <h3>Sector Allocation</h3>
+                        </div>
+                        <div class="card__body">
+                            <div class="chart-container">
+                                <canvas id="sector-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card__header">
+                            <h3>Market Cap Distribution</h3>
+                        </div>
+                        <div class="card__body">
+                            <div class="chart-container">
+                                <canvas id="marketcap-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Performance Section -->
+                <div class="performance-grid">
+                    <div class="card">
+                        <div class="card__header">
+                            <h3>Top Gainers</h3>
+                        </div>
+                        <div class="card__body">
+                            <div id="top-gainers" class="performance-list"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card__header">
+                            <h3>Top Losers</h3>
+                        </div>
+                        <div class="card__body">
+                            <div id="top-losers" class="performance-list"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Holdings Table -->
+                <div class="card holdings-card">
+                    <div class="card__header">
+                        <div class="holdings-header">
+                            <h3>Holdings Details</h3>
+                            <div class="holdings-actions">
+                                <input 
+                                    type="text" 
+                                    id="holdings-search" 
+                                    class="form-control search-input" 
+                                    placeholder="Search holdings..."
+                                >
+                                <button type="button" class="btn btn--secondary btn--sm" id="export-btn">
+                                    Export CSV
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card__body">
+                        <div class="table-container">
+                            <table id="holdings-table" class="holdings-table">
+                                <thead>
+                                    <tr>
+                                        <th data-sort="symbol">Symbol ↕</th>
+                                        <th data-sort="company">Company</th>
+                                        <th data-sort="sector">Sector</th>
+                                        <th data-sort="quantity">Quantity</th>
+                                        <th data-sort="current_value">Current Value</th>
+                                        <th data-sort="gain_loss">Gain/Loss</th>
+                                        <th data-sort="return_pct">Return %</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Clear Analysis Button -->
+                <div class="analysis-actions">
+                    <button type="button" class="btn btn--outline btn--lg" id="clear-analysis-btn">
+                        Clear Analysis & Upload New File
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
